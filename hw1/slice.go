@@ -30,10 +30,11 @@ func decreaseSlice[T comparable](src []T) []T {
 	// 则直接/2
 	if doubleLen <= oldCap && doubleLen > 0 {
 		newCap = oldCap / 2
+		newArr := make([]T, newLen, newCap)
+
+		copy(newArr, src)
+		return newArr
 	}
 
-	newArr := make([]T, newLen, newCap)
-
-	copy(newArr, src)
-	return newArr
+	return src
 }
