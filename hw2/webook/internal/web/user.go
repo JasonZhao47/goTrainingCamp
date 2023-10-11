@@ -15,18 +15,23 @@ const (
 	emailRegexPattern = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 	// 和上面比起来，用 ` 看起来就比较清爽
 	passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
+	// 用户名必须是大小写字母和下划线组合，长度为12以内
+	nickNameRegexPattern = `^[a-zA-Z0-9_]{1,12}$`
 )
 
 type UserHandler struct {
 	emailRexExp    *regexp.Regexp
 	passwordRexExp *regexp.Regexp
-	svc            *service.UserService
+	nickNameRexExp *regexp.Regexp
+
+	svc *service.UserService
 }
 
 func NewUserHandler(svc *service.UserService) *UserHandler {
 	return &UserHandler{
 		emailRexExp:    regexp.MustCompile(emailRegexPattern, regexp.None),
 		passwordRexExp: regexp.MustCompile(passwordRegexPattern, regexp.None),
+		nickNameRexExp: regexp.MustCompile(nickNameRegexPattern, regexp.None),
 		svc:            svc,
 	}
 }
@@ -166,8 +171,11 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 
 func (h *UserHandler) Edit(ctx *gin.Context) {
 	// 嵌入一段刷新过期时间的代码
+
 	type Req struct {
 		// 改邮箱，密码，或者能不能改手机号
+		// 修改邮箱密码是涉及敏感信息的部分
+		// 重置密码和邮箱使用单独的接口
 
 		Nickname string `json:"nickname"`
 		// YYYY-MM-DD
@@ -175,6 +183,8 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 		AboutMe  string `json:"aboutMe"`
 	}
 	var req Req
+	errorResp := make(map[string]string)
+
 	if err := ctx.Bind(&req); err != nil {
 		return
 	}
@@ -186,13 +196,32 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+	uc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(5 * time.Minute))
+	// 用户输入非法用户名
+	isNickName, err := h.nickNameRexExp.MatchString(req.Nickname)
+	if err != nil {
+		ctx.String(http.StatusOK, "非法用户名")
+		return
+	}
+	if !isNickName {
+		errorResp["nickname"] = "用户名必须是大小写字母和下划线组合，长度为12以内"
+	}
 	// 用户输入不对
 	birthday, err := time.Parse(time.DateOnly, req.Birthday)
 	if err != nil {
 		//ctx.String(http.StatusOK, "系统错误")
-		ctx.String(http.StatusOK, "生日格式不对")
+		errorResp["birthday"] = "生日格式错误"
+	}
+	// 用户输入超过140个字个人简介
+	if len(req.AboutMe) > 140 {
+		errorResp["about_me"] = "个人简介限制在140个字以内"
+	}
+
+	if len(errorResp) > 0 {
+		ctx.JSON(http.StatusOK, errorResp)
 		return
 	}
+
 	err = h.svc.UpdateNonSensitiveInfo(ctx, domain.User{
 		Id:       uc.Uid,
 		Nickname: req.Nickname,
@@ -203,6 +232,7 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "系统异常")
 		return
 	}
+
 	ctx.String(http.StatusOK, "更新成功")
 }
 
@@ -222,12 +252,14 @@ func (h *UserHandler) Profile(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "系统异常")
 		return
 	}
+	uc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(5 * time.Minute))
 	type User struct {
 		Nickname string `json:"nickname"`
 		Email    string `json:"email"`
 		AboutMe  string `json:"aboutMe"`
 		Birthday string `json:"birthday"`
 	}
+
 	ctx.JSON(http.StatusOK, User{
 		Nickname: u.Nickname,
 		Email:    u.Email,

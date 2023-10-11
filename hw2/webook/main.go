@@ -75,7 +75,7 @@ func initWebServer() *gin.Engine {
 		},
 		MaxAge: 12 * time.Hour,
 	}), func(ctx *gin.Context) {
-		println("这是我的 Middleware")
+		//println("这是我的 Middleware")
 	})
 
 	redisClient := redis.NewClient(&redis.Options{
