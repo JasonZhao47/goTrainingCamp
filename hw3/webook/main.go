@@ -24,12 +24,11 @@ func main() {
 	db := initDB()
 
 	server := initWebServer()
-	initUserHdl(db, server)
-	//server := gin.Default()
-	server.GET("/hello", func(ctx *gin.Context) {
+	server.GET("/", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "hello，启动成功了！")
 	})
-	server.Run(":8080")
+	initUserHdl(db, server)
+	server.Run(":8081")
 }
 
 func initUserHdl(db *gorm.DB, server *gin.Engine) {
@@ -85,7 +84,7 @@ func initWebServer() *gin.Engine {
 	server.Use(ratelimit.NewBuilder(redisClient,
 		time.Second, 1).Build())
 
-	useJWT(server)
+	//useJWT(server)
 	//useSession(server)
 	return server
 }

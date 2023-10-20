@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: webook-mysql-pvc
 spec:
-  storageClassName: record
+  storageClassName: webook-jasonzhao
   accessModes:
     - ReadWriteOnce
   resources:

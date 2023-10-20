@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: webook-record
+  name: webook-jasonzhao47
+# 规则说明，用来说明这个实体service或者deployment是用来做啥的
 spec:
   selector:
-    app: webook-record
+    app: webook-jasonzhao47
   ports:
-    - protocol: TCP
-      port: 98
-      targetPort: 8080
+    - name: http
+      protocol: TCP
+      port: 87
+      targetPort: 8081
   type: ClusterIP
   
