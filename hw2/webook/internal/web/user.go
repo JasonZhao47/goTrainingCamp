@@ -233,7 +233,7 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 	}
 
 	uc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(5 * time.Minute))
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaim)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, uc)
 	tokenStr, err := token.SignedString(JWTKey)
 	if err != nil {
 		ctx.String(http.StatusOK, "系统错误")
