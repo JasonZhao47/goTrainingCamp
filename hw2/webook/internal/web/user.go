@@ -196,7 +196,6 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	uc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(5 * time.Minute))
 	// 用户输入非法用户名
 	isNickName, err := h.nickNameRexExp.MatchString(req.Nickname)
 	if err != nil {
@@ -233,6 +232,14 @@ func (h *UserHandler) Edit(ctx *gin.Context) {
 		return
 	}
 
+	uc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(5 * time.Minute))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, userClaim)
+	tokenStr, err := token.SignedString(JWTKey)
+	if err != nil {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	ctx.Header("x-jwt-token", tokenStr)
 	ctx.String(http.StatusOK, "更新成功")
 }
 
