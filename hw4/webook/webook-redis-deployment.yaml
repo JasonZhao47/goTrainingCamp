@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webook-redis-jasonzhao47
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webook-redis-jasonzhao47
+  template:
+    metadata:
+      labels:
+        app: webook-redis-jasonzhao47
+    spec:
+      containers:
+        - name: webook-redis-jasonzhao47
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      
