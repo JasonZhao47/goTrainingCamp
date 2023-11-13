@@ -7,6 +7,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/jasonzhao47/goTrainingCamp/hw5/webook/internal/repository"
 	"github.com/jasonzhao47/goTrainingCamp/hw5/webook/internal/repository/cache"
 	"github.com/jasonzhao47/goTrainingCamp/hw5/webook/internal/repository/dao"
@@ -14,7 +15,6 @@ import (
 	"github.com/jasonzhao47/goTrainingCamp/hw5/webook/internal/web"
 	"github.com/jasonzhao47/goTrainingCamp/hw5/webook/internal/web/jwt"
 	"github.com/jasonzhao47/goTrainingCamp/hw5/webook/ioc"
-	"github.com/gin-gonic/gin"
 )
 
 import (
@@ -43,8 +43,8 @@ func InitWebServer() *gin.Engine {
 	articleRepository := repository.NewCachedArticleRepository(articleDAO, userRepository, articleCache)
 	articleService := service.NewArticleService(articleRepository)
 	articleHandler := web.NewArticleHandler(loggerV1, articleService)
-	wechatService := ioc.InitWechatService(loggerV1)
-	oAuth2WechatHandler := web.NewOAuth2WechatHandler(wechatService, handler, userService)
-	engine := ioc.InitWebServer(v, userHandler, articleHandler, oAuth2WechatHandler)
+	//wechatService := ioc.InitWechatService(loggerV1)
+	//oAuth2WechatHandler := web.NewOAuth2WechatHandler(wechatService, handler, userService)
+	engine := ioc.InitWebServer(v, userHandler, articleHandler)
 	return engine
 }
